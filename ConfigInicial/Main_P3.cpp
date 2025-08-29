@@ -261,7 +261,8 @@ int main() {
 		// cuarto cubo
 		model = glm::mat4(1);
 		model = glm::translate(model, glm::vec3(2.50f, 2.0f, -12.0f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1, 0, 0)); // arriba
+		model = glm::rotate(model, glm::radians(-80.0f), glm::vec3(1, 0, 0));
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0, 0, 1));// arriba
 		model = glm::scale(model, glm::vec3(4.0f));
 
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -270,7 +271,8 @@ int main() {
 		//quinto Cubo
 		model = glm::mat4(1);
 		model = glm::translate(model, glm::vec3(-2.50f, 2.0f, -12.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1, 0, 0));  // abajo
+		model = glm::rotate(model, glm::radians(100.0f), glm::vec3(1, 0, 0)); 
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0, 0, 1));// abajo
 		model = glm::scale(model, glm::vec3(4.0f));
 
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
