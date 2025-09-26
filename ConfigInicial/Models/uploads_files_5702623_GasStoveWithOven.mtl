@@ -1,0 +1,75 @@
+# --- MTL LIMPIO (rutas relativas y JPG) ---
+
+newmtl Aluminium
+Ka 1 1 1
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ni 1.5
+d 1
+illum 3
+map_Kd texturas_estufa/Metal029_2K_Color.jpg
+map_Ns texturas_estufa/Metal029_2K_Roughness.jpg
+map_Bump -bm 1.0 texturas_estufa/Metal029_2K_Normal.jpg
+
+newmtl BrushedAluminium
+Ns 360
+Ka 1 1 1
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ni 1
+d 1
+illum 2
+# (sin textura; tu shader debe tener fallback de color Kd)
+
+newmtl Chrome
+Ns 722.5
+Ka 1 1 1
+Kd 0.65 0.65 0.65
+Ks 0 0 0
+Ni 1.45
+d 1
+illum 1
+# (sin textura)
+
+newmtl GlassA
+Ns 360
+Ka 1 1 1
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ni 1
+d 1
+illum 2
+# (sin textura)
+
+newmtl Metal
+Ka 1 1 1
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ni 1.5
+d 1
+illum 3
+map_Kd texturas_estufa/Metal029_2K_Color.jpg
+map_Ns texturas_estufa/Metal029_2K_Roughness.jpg
+map_Bump -bm 1.0 texturas_estufa/Metal029_2K_Normal.jpg
+
+newmtl Steel
+Ns 360
+Ka 1 1 1
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ni 1
+d 1
+illum 2
+# (sin textura)
+
+newmtl Stove_Panels
+Ka 1 1 1
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ni 1.5
+d 1
+illum 3
+map_Kd texturas_estufa/Panels.jpg
+map_Ns texturas_estufa/Panels_Roughness.jpg
+map_Bump -bm 1.0 texturas_estufa/Panels_NM.jpg
+

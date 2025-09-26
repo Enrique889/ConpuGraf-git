@@ -1,7 +1,7 @@
 //Juarez Huerta Enrique
 //Numero de Cuenta: 319279207
-//Previo 6
-//Fecha de Entrega: 21/Sept/2025
+//Practica 6
+//Fecha de Entrega: 26/Sept/2025
 
 // Std. Includes
 #include <string>
@@ -37,13 +37,27 @@ void DoMovement( );
 
 
 // Camera
-Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+Camera camera(glm::vec3(0.0f, 2.0f, 10.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
+
+void DrawModel(Model& m, Shader& shader,
+    const glm::vec3& pos,
+    float rotY_deg,
+    const glm::vec3& scl)
+{
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, pos);
+    model = glm::rotate(model, glm::radians(rotY_deg), glm::vec3(0, 1, 0));
+    model = glm::scale(model, scl);
+    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"),
+        1, GL_FALSE, glm::value_ptr(model));
+    m.Draw(shader);
+}
 
 
 
@@ -94,15 +108,22 @@ int main( )
     
     // OpenGL options
     glEnable( GL_DEPTH_TEST );
-    
+    glDisable(GL_CULL_FACE);   // <- solo para depurar
+
     // Setup and compile our shaders
     Shader shader( "Shader/modelLoading.vs", "Shader/modelLoading.frag" );
     
-    // Load models
-    Model dog((char*)"Models/RedDog.obj");
-    glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 100.0f );
+    Model dog((char*)"Models/RedDog.obj"); // si lo quieres mantener
+
+    Model stove((char*)"Models/uploads_files_5702623_GasStoveWithOven.obj");
+    Model fridge((char*)"Models/Samsung_Fridge_low.obj");
+    Model cabinet((char*)"Models/Cajonera.obj");
+    Model plant((char*)"Models/Planta.obj");
+    glm::mat4 projection = glm::perspective(
+        camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
     
-  
+    glm::mat4 model(1.0f);   // declaración
+
 
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -125,17 +146,52 @@ int main( )
         glm::mat4 view = camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        //Planta
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.50f, -0.20f, 0.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(0.10f));   // 1 %
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        plant.Draw(shader);
 
-        // Draw the loaded model
-        glm::mat4 model(1);
+        //Estufa
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-1.2f, -0.20f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(1.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        stove.Draw(shader);
+
+        //Cajonera
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-0.350f, -0.20f, 0.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(0.001f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        cabinet.Draw(shader);
+
+        //Refrigerador
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.53f, -0.20f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(0.0250f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        fridge.Draw(shader);
+
+        //perro1
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-0.8f, 0.0f, 0.6f));
+        model = glm::scale(model, glm::vec3(0.5f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         dog.Draw(shader);
 
-
-        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
-        model == glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"),1,GL_FALSE, glm::value_ptr(model));
+        //perro2
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.70f, 0.0f, 1.20f));
+        model = glm::scale(model, glm::vec3(0.5f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         dog.Draw(shader);
+
 
 
         // Swap the buffers
