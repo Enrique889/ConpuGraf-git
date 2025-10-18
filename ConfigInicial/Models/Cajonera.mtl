@@ -1,12 +1,21 @@
-# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 02.12.2024 17:19:47
+# MTL File para el modelo Cajonera
 
-newmtl wire_135059008
-	Ns 32
-	d 1
-	Tr 0
-	Tf 1 1 1
-	illum 2
-	Ka 0.5294 0.2314 0.0314
-	Kd 0.5294 0.2314 0.0314
-	Ks 0.3500 0.3500 0.3500
+newmtl Cajonera_Madera
+	Ns 150.000000      # Brillo especular (un valor medio para madera)
+	Ka 1.0 1.0 1.0      # Color Ambiente
+	Kd 1.0 1.0 1.0      # Color Difuso (la textura lo define)
+	Ks 0.4 0.4 0.4      # Color Especular (brillo no muy intenso)
+	Ke 0.0 0.0 0.0      # No emite luz
+	Ni 1.5              # Índice de refracción
+	d 1.0               # Opaco
+	illum 2             # Modelo de iluminación estándar
+
+# --- MAPAS DE TEXTURA ---
+	# Textura de color principal (Diffuse)
+	map_Kd texturas_cajonera/Dresser_Wood_D.jpg
+
+	# Textura de Rugosidad (Roughness -> Ns)
+	map_Ns texturas_cajonera/Dresser_Wood_R.jpg
+
+	# Textura de Relieve (Bump)
+	map_Bump texturas_cajonera/Dresser_Wood_B.jpg

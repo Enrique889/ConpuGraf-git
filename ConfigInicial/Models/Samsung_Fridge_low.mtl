@@ -1,14 +1,62 @@
-# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 05.11.2017 12:10:52
+# MTL File para el modelo Samsung Fridge
+# Creado para ser usado con el shader de carga de modelos.
 
-newmtl Samsung_Fridge
-	Ns 10.0000
-	Ni 1.5000
-	d 1.0000
-	Tr 0.0000
-	Tf 1.0000 1.0000 1.0000 
-	illum 2
-	Ka 0.8980 0.5882 0.5882
-	Kd 0.8980 0.5882 0.5882
-	Ks 0.0000 0.0000 0.0000
-	Ke 0.0000 0.0000 0.0000
+# ===============================================================
+# 1. Material para el CUERPO principal del refrigerador
+#    Usa este material en el .obj para g Body, g Right_Door, etc.
+# ===============================================================
+newmtl Body_Material
+    Ns 250.000000    # Brillo especular (Glossiness)
+    Ka 1.0 1.0 1.0    # Color Ambiente (blanco, la textura lo pinta)
+    Kd 1.0 1.0 1.0    # Color Difuso (blanco, la textura lo pinta)
+    Ks 0.9 0.9 0.9    # Color Especular (muy reflectante)
+    Ke 0.0 0.0 0.0    # Color Emisivo (no brilla)
+    Ni 1.450000       # Índice de refracción
+    d 1.000000        # Opacidad
+    illum 2           # Modelo de iluminación estándar (difuso + especular)
+
+    # --- MAPAS DE TEXTURA ---
+    map_Kd texturas_refri/Samsung_Fridge_low_Samsung_Fridge_Diffuse.png
+    map_Ks texturas_refri/Samsung_Fridge_low_Samsung_Fridge_Reflection.jpg
+    map_Bump texturas_refri/Samsung_Fridge_low_Samsung_Fridge_Normal.jpg
+
+
+# ===============================================================
+# 2. Material para las partes METÁLICAS como las manijas
+#    Usa este material en el .obj para g Left_Door_Handle, etc.
+# ===============================================================
+newmtl Metallic_Material
+    Ns 300.000000    # Muy brillante
+    Ka 1.0 1.0 1.0
+    Kd 1.0 1.0 1.0
+    Ks 1.0 1.0 1.0    # Totalmente reflectante
+    Ke 0.0 0.0 0.0
+    Ni 1.450000
+    d 1.000000
+    illum 2
+    
+    # --- MAPAS DE TEXTURA ---
+    # Usamos la textura 'Metallic' para el color y el brillo
+    map_Kd texturas_refri/Metallic.jpg
+    map_Ks texturas_refri/Metallic.jpg
+
+
+# ===============================================================
+# 3. Material para las LUCES INTERIORES que brillan
+#    Usa este en el .obj para g Interior_Light_Top, etc.
+# ===============================================================
+newmtl Light_Material
+    Ns 10.000000
+    Ka 1.0 1.0 1.0
+    Kd 1.0 1.0 1.0
+    Ks 0.0 0.0 0.0    # Las luces no suelen tener brillo especular
+    Ke 1.0 1.0 1.0    # ¡ESTE ES EL IMPORTANTE! Le decimos que brille en blanco
+    Ni 1.450000
+    d 1.000000
+    illum 2
+
+    # --- MAPAS DE TEXTURA ---
+    # El mapa emisivo define QUÉ PARTES brillan con el color Ke
+    map_Ke texturas_refri/Samsung_Fridge_low_Samsung_Fridge_Emissive.jpg
+    # También lo ponemos como difuso para que se vea blanco incluso sin luz
+    map_Kd texturas_refri/Samsung_Fridge_low_Samsung_Fridge_Emissive.jpg

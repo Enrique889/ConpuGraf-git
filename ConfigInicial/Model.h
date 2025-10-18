@@ -49,24 +49,37 @@ private:
 
 										/*  Functions   */
 										// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-	void loadModel(string path)
+	void loadModel(std::string path)
 	{
 		// Read file via ASSIMP
 		Assimp::Importer importer;
-		const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-		// Check for errors
-		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+		// Opcional: controla el ángulo de suavizado de las normales generadas (0–180)
+		importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 60.0f);
+
+		const unsigned int flags =
+			aiProcess_Triangulate |
+			aiProcess_FlipUVs |
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_GenSmoothNormals;   // <- genera 'vn' si faltan
+		// Si luego haces normal mapping, añade: | aiProcess_CalcTangentSpace
+
+		const aiScene* scene = importer.ReadFile(path, flags);
+
+		// Check for errors  (usa bitwise & en lugar de ==)
+		if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
 		{
-			cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+			std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
 			return;
 		}
+
 		// Retrieve the directory path of the filepath
 		this->directory = path.substr(0, path.find_last_of('/'));
 
 		// Process ASSIMP's root node recursively
 		this->processNode(scene->mRootNode, scene);
 	}
+
 
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 	void processNode(aiNode* node, const aiScene* scene)
@@ -108,23 +121,25 @@ private:
 			vertex.Position = vector;
 
 			// Normals
-			vector.x = mesh->mNormals[i].x;
-			vector.y = mesh->mNormals[i].y;
-			vector.z = mesh->mNormals[i].z;
-			vertex.Normal = vector;
+			if (mesh->HasNormals()) {
+				vertex.Normal = glm::vec3(
+					mesh->mNormals[i].x,
+					mesh->mNormals[i].y,
+					mesh->mNormals[i].z
+				);
+			}
+			else {
+				vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f); // fallback
+			}
 
 			// Texture Coordinates
-			if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
-			{
-				glm::vec2 vec;
-				// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't
-				// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-				vec.x = mesh->mTextureCoords[0][i].x;
-				vec.y = mesh->mTextureCoords[0][i].y;
-				vertex.TexCoords = vec;
+			if (mesh->HasTextureCoords(0)) {
+				vertex.TexCoords = glm::vec2(
+					mesh->mTextureCoords[0][i].x,
+					mesh->mTextureCoords[0][i].y
+				);
 			}
-			else
-			{
+			else {
 				vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 			}
 
