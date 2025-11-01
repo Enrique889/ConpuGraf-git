@@ -1,41 +1,32 @@
 //Juarez Huerta Enrique
 //Numero de Cuenta: 319279207
-//Práctica 8
-//17 de Octubre de 2025
+//Práctica 9
+//24 de Octubre de 2025
 
-// Std. Includes
 #include <string>
+#include <iostream>
 
-// GLEW
 #include <GL/glew.h>
-
-// GLFW
 #include <GLFW/glfw3.h>
 
-// GL includes
 #include "Shader.h"
 #include "Camera.h"
 #include "Model.h"
 
-// GLM Mathemtics
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// Other Libs
 #include "SOIL2/SOIL2.h"
 #include "stb_image.h"
 
-// Properties
 const GLuint WIDTH = 800, HEIGHT = 600;
 int SCREEN_WIDTH, SCREEN_HEIGHT;
 
-// Function prototypes
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void MouseCallback(GLFWwindow* window, double xPos, double yPos);
 void DoMovement();
 
-// Camera
 Camera camera(glm::vec3(0.0f, 2.0f, 10.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
@@ -44,29 +35,22 @@ bool firstMouse = true;
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
-// ======== VARIABLES PARA EL CICLO DÍA/NOCHE ========
-float cycleAngle = 0.0f;          // El ángulo actual del ciclo en radianes
-const float cycleRadius = 10.0f;  // Qué tan lejos estarán las luces del centro
+float cycleAngle = 0.0f;
+const float cycleRadius = 10.0f;
 
-// ======== POSICIONES DE LAS LUCES (se actualizarán cada fotograma) ========
 glm::vec3 sunPos(0.0f, 0.0f, 0.0f);
 glm::vec3 moonPos(0.0f, 0.0f, 0.0f);
 
-
 int main()
 {
-    // Init GLFW
     glfwInit();
-    // Set all the required options for GLFW
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    // Create a GLFWwindow object that we can use for GLFW's functions
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Enrique Juarez Huerta - Iluminacion", nullptr, nullptr);
-
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Enrique Juarez Huerta", nullptr, nullptr);
     if (nullptr == window)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -77,11 +61,9 @@ int main()
     glfwMakeContextCurrent(window);
     glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
 
-    // Set the required callback functions
     glfwSetKeyCallback(window, KeyCallback);
     glfwSetCursorPosCallback(window, MouseCallback);
 
-    // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;
     if (GLEW_OK != glewInit())
     {
@@ -89,31 +71,28 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Define the viewport dimensions
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    // OpenGL options
     glEnable(GL_DEPTH_TEST);
 
-    // ======== SHADERS ========
     Shader shader("Shader/modelLoading.vs", "Shader/modelLoading.frag");
     Shader lampShader("Shader/lamp.vs", "Shader/lamp.frag");
 
-    // ======== CARGA DE MODELOS ========
     Model dog((char*)"Models/RedDog.obj");
     Model stove((char*)"Models/uploads_files_5702623_GasStoveWithOven.obj");
     Model fridge((char*)"Models/Samsung_Fridge_low.obj");
     Model cabinet((char*)"Models/Cajonera.obj");
+    Model lamp2((char*)"Models/uploads_files_3418524_248664_TolomeoMegaFloorLamp.obj");
+    
 
-    // ======== SETUP DEL CUBO DE LUZ (LAMP) ========
     float vertices[] = {
         -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f,
-        -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f
+         0.5f, -0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f, -0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f, -0.5f, -0.5f,  0.5f
     };
+
     GLuint VBO, lampVAO;
     glGenVertexArrays(1, &lampVAO);
     glGenBuffers(1, &VBO);
@@ -124,104 +103,158 @@ int main()
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
-    // Game loop
     while (!glfwWindowShouldClose(window))
     {
-        // Set frame time
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Check and call events
         glfwPollEvents();
         DoMovement();
 
-        // ======== RECALCULAR POSICIÓN DE LUCES ========
-        sunPos.x = 0.0f; // Mantenemos el sol en el centro del eje X
+        sunPos.x = 0.0f;
         sunPos.y = cycleRadius * glm::cos(cycleAngle);
         sunPos.z = cycleRadius * glm::sin(cycleAngle);
-        moonPos = -sunPos; // La luna siempre está en la posición opuesta
 
-        // Clear the colorbuffer
+        moonPos = -sunPos;
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // ======== DIBUJAR MODELOS DE LA ESCENA ========
+        glm::mat4 projection = glm::perspective(
+            camera.GetZoom(),
+            (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
+            0.1f,
+            100.0f
+        );
+
+        glm::mat4 view = camera.GetViewMatrix();
+
         shader.Use();
+
         glUniform3fv(glGetUniformLocation(shader.Program, "viewPos"), 1, &camera.GetPosition()[0]);
 
-        // --- LUZ 1: SOL ---
         glUniform3fv(glGetUniformLocation(shader.Program, "lights[0].position"), 1, &sunPos[0]);
         glUniform3f(glGetUniformLocation(shader.Program, "lights[0].ambient"), 0.3f, 0.3f, 0.3f);
         glUniform3f(glGetUniformLocation(shader.Program, "lights[0].diffuse"), 1.0f, 1.0f, 0.9f);
         glUniform3f(glGetUniformLocation(shader.Program, "lights[0].specular"), 1.0f, 1.0f, 1.0f);
 
-        // --- LUZ 2: LUNA ---
         glUniform3fv(glGetUniformLocation(shader.Program, "lights[1].position"), 1, &moonPos[0]);
         glUniform3f(glGetUniformLocation(shader.Program, "lights[1].ambient"), 0.1f, 0.1f, 0.15f);
         glUniform3f(glGetUniformLocation(shader.Program, "lights[1].diffuse"), 0.2f, 0.2f, 0.4f);
         glUniform3f(glGetUniformLocation(shader.Program, "lights[1].specular"), 0.3f, 0.3f, 0.3f);
 
-        glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader.Program, "projection"),
+            1, GL_FALSE,
+            glm::value_ptr(projection)
+        );
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader.Program, "view"),
+            1, GL_FALSE,
+            glm::value_ptr(view)
+        );
+
+        glm::vec3 lampMin = lamp2.getBBoxMin();
+        glm::vec3 lampMax = lamp2.getBBoxMax();
+        glm::vec3 lampCenter = 0.5f * (lampMin + lampMax);
+
+        float lampBaseY = lampMin.y;
+        float desiredFloorY = -0.20f;
+        float currentBaseAfterCenter = lampBaseY - lampCenter.y;
+        float deltaYLamp = desiredFloorY - currentBaseAfterCenter;
+
+        glm::vec3 localOffset(
+            -lampCenter.x,
+            -lampCenter.y + deltaYLamp,
+            -lampCenter.z
+        );
+
+        float lampScale = 0.001f;
+        glm::vec3 worldPos(1.2f, 0.0f, 1.2f);
+
+        glm::mat4 lampModel = glm::mat4(1.0f);
+        lampModel = glm::translate(lampModel, worldPos);
+        lampModel = glm::scale(lampModel, glm::vec3(lampScale));
+        lampModel = glm::translate(lampModel, localOffset);
+
+        float tipLocalY = (lampMax.y - lampCenter.y + deltaYLamp);
+        glm::vec3 spotPos = worldPos + lampScale * glm::vec3(0.0f, tipLocalY, 0.0f);
+        glm::vec3 spotDir = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+
+        glUniform3fv(glGetUniformLocation(shader.Program, "spotLight.position"), 1, &spotPos[0]);
+        glUniform3fv(glGetUniformLocation(shader.Program, "spotLight.direction"), 1, &spotDir[0]);
+        glUniform3f(glGetUniformLocation(shader.Program, "spotLight.ambient"), 0.8f, 0.8f, 0.5f);
+        glUniform3f(glGetUniformLocation(shader.Program, "spotLight.diffuse"), 0.80f, 0.3f, 0.8f);
+        glUniform3f(glGetUniformLocation(shader.Program, "spotLight.specular"), 0.80f, 0.3f, 0.7f);
+        glUniform1f(glGetUniformLocation(shader.Program, "spotLight.constant"), 1.0f);
+        glUniform1f(glGetUniformLocation(shader.Program, "spotLight.linear"), 0.14f);
+        glUniform1f(glGetUniformLocation(shader.Program, "spotLight.quadratic"), 0.07f);
+        glUniform1f(glGetUniformLocation(shader.Program, "spotLight.cutOff"), glm::cos(glm::radians(12.5f)));
+        glUniform1f(glGetUniformLocation(shader.Program, "spotLight.outerCutOff"), glm::cos(glm::radians(17.5f)));
 
         glm::mat4 model(1.0f);
-        //Estufa
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-1.2f, -0.20f, 0.0f));
         model = glm::scale(model, glm::vec3(1.0f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         stove.Draw(shader);
-        //Cajonera
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-0.350f, -0.20f, 0.0f));
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
         model = glm::scale(model, glm::vec3(0.001f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         cabinet.Draw(shader);
-        //Refrigerador
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.53f, -0.20f, 0.0f));
         model = glm::scale(model, glm::vec3(0.0250f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         fridge.Draw(shader);
-        //Perro1
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-0.8f, 0.0f, 0.6f));
         model = glm::scale(model, glm::vec3(0.5f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         dog.Draw(shader);
-        //Perro2
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.70f, 0.0f, 1.20f));
         model = glm::scale(model, glm::vec3(0.5f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         dog.Draw(shader);
 
-        // ======== DIBUJAR LOS CUBOS DE LUZ ========
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader.Program, "model"),
+            1, GL_FALSE,
+            glm::value_ptr(lampModel)
+        );
+        lamp2.Draw(shader);
+
         lampShader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
         glBindVertexArray(lampVAO);
-        // Dibujar cubo del Sol
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, sunPos);
-        model = glm::scale(model, glm::vec3(0.3f));
-        glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        glm::mat4 mSol = glm::mat4(1.0f);
+        mSol = glm::translate(mSol, sunPos);
+        mSol = glm::scale(mSol, glm::vec3(0.3f));
+        glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(mSol));
         glUniform3f(glGetUniformLocation(lampShader.Program, "lampColor"), 1.0f, 1.0f, 0.9f);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        // Dibujar cubo de la Luna
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, moonPos);
-        model = glm::scale(model, glm::vec3(0.2f));
-        glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        glm::mat4 mLuna = glm::mat4(1.0f);
+        mLuna = glm::translate(mLuna, moonPos);
+        mLuna = glm::scale(mLuna, glm::vec3(0.2f));
+        glUniformMatrix4fv(glGetUniformLocation(lampShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(mLuna));
         glUniform3f(glGetUniformLocation(lampShader.Program, "lampColor"), 0.5f, 0.5f, 1.0f);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
         glBindVertexArray(0);
 
-        // Swap the buffers
         glfwSwapBuffers(window);
     }
 
@@ -231,7 +264,6 @@ int main()
 
 void DoMovement()
 {
-    // Camera controls
     if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
         camera.ProcessKeyboard(FORWARD, deltaTime);
     if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
@@ -241,7 +273,6 @@ void DoMovement()
     if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
         camera.ProcessKeyboard(RIGHT, deltaTime);
 
-    // ======== CONTROL DEL CICLO DÍA/NOCHE ========
     if (keys[GLFW_KEY_O])
         cycleAngle += 0.5f * deltaTime;
     if (keys[GLFW_KEY_L])

@@ -25,6 +25,9 @@ GLint TextureFromFile(const char *path, string directory);
 class Model
 {
 public:
+	glm::vec3 getBBoxMin() const { return bboxMin; }
+	glm::vec3 getBBoxMax() const { return bboxMax; }
+
 	/*  Functions   */
 	// Constructor, expects a filepath to a 3D model.
 	Model(GLchar *path)
@@ -44,41 +47,52 @@ public:
 private:
 	/*  Model Data  */
 	vector<Mesh> meshes;
+	
+
 	string directory;
 	vector<Texture> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
 
-										/*  Functions   */
+	glm::vec3 bboxMin;
+	glm::vec3 bboxMax;
+	bool bboxInit = false;							
+	/*  Functions   */
 										// Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 	void loadModel(std::string path)
 	{
-		// Read file via ASSIMP
-		Assimp::Importer importer;
+		std::cout << "[Model] Intentando cargar: " << path << std::endl;
 
-		// Opcional: controla el ángulo de suavizado de las normales generadas (0–180)
+		Assimp::Importer importer;
 		importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 60.0f);
 
 		const unsigned int flags =
 			aiProcess_Triangulate |
 			aiProcess_FlipUVs |
 			aiProcess_JoinIdenticalVertices |
-			aiProcess_GenSmoothNormals;   // <- genera 'vn' si faltan
-		// Si luego haces normal mapping, añade: | aiProcess_CalcTangentSpace
+			aiProcess_GenSmoothNormals;
 
 		const aiScene* scene = importer.ReadFile(path, flags);
 
-		// Check for errors  (usa bitwise & en lugar de ==)
 		if (!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
 		{
-			std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+			std::cout << "[Model] ERROR al cargar " << path
+				<< " : " << importer.GetErrorString() << std::endl;
 			return;
 		}
 
-		// Retrieve the directory path of the filepath
 		this->directory = path.substr(0, path.find_last_of('/'));
 
-		// Process ASSIMP's root node recursively
+		// Procesar la escena completa
 		this->processNode(scene->mRootNode, scene);
+
+		// Después de procesar, imprime bounding box
+		std::cout << "[Model] Cargado ok: " << path << std::endl;
+		std::cout << "         meshes totales = " << this->meshes.size() << std::endl;
+		std::cout << "         bboxMin = ("
+			<< bboxMin.x << ", " << bboxMin.y << ", " << bboxMin.z << ")\n";
+		std::cout << "         bboxMax = ("
+			<< bboxMax.x << ", " << bboxMax.y << ", " << bboxMax.z << ")\n";
 	}
+
 
 
 	// Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
@@ -115,10 +129,27 @@ private:
 			glm::vec3 vector; // We declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 
 							  // Positions
+			// Positions
 			vector.x = mesh->mVertices[i].x;
 			vector.y = mesh->mVertices[i].y;
 			vector.z = mesh->mVertices[i].z;
 			vertex.Position = vector;
+			// Actualizar bounding box global del modelo
+			if (!bboxInit) {
+				bboxMin = vector;
+				bboxMax = vector;
+				bboxInit = true;
+			}
+			else {
+				bboxMin.x = std::min(bboxMin.x, vector.x);
+				bboxMin.y = std::min(bboxMin.y, vector.y);
+				bboxMin.z = std::min(bboxMin.z, vector.z);
+
+				bboxMax.x = std::max(bboxMax.x, vector.x);
+				bboxMax.y = std::max(bboxMax.y, vector.y);
+				bboxMax.z = std::max(bboxMax.z, vector.z);
+			}
+
 
 			// Normals
 			if (mesh->HasNormals()) {
